@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kasir Café + QRIS</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #8EC5FC, #E0C3FC);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      width: 90%;
+      max-width: 700px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      padding: 25px;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .menu-section {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    select, input {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #007bff;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    .total {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .reset-btn {
+      background: #dc3545;
+    }
+
+    .reset-btn:hover {
+      background: #a71d2a;
+    }
+
+    .pay-btn {
+      background: #28a745;
+    }
+
+    .pay-btn:hover {
+      background: #1e7e34;
+    }
+
+    .footer {
+      font-size: 12px;
+      color: #777;
+      margin-top: 15px;
+    }
+
+    /* Popup QRIS */
+    .qris-modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .qris-content {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 90%;
+      max-width: 350px;
+    }
+
+    .qris-content img {
+      width: 200px;
+      height: 200px;
+      margin: 10px 0;
+      border: 2px solid #eee;
+      border-radius: 10px;
+    }
+
+    .close-btn {
+      background: #dc3545;
+      margin-top: 10px;
+    }
+
+    .close-btn:hover {
+      background: #a71d2a;
+    }
+
+    .download-btn {
+      background: #ffc107;
+      color: #333;
+    }
+
+    .download-btn:hover {
+      background: #e0a800;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🍽️ Kasir Café Modern</h1>
+    <p>Pilih menu dan lakukan pembayaran via QRIS</p>
+
+    <div class="menu-section">
+      <select id="menu">
+        <option value="">-- Pilih Menu --</option>
+        <optgroup label="🍛 Makanan">
+          <option value="15000">Nasi Goreng - Rp 15.000</option>
+          <option value="13000">Mie Goreng - Rp 13.000</option>
+          <option value="12000">Ayam Geprek - Rp 12.000</option>
+          <option value="10000">Soto Ayam - Rp 10.000</option>
+        </optgroup>
+        <optgroup label="🥤 Minuman">
+          <option value="8000">Es Teh Manis - Rp 8.000</option>
+          <option value="9000">Es Jeruk - Rp 9.000</option>
+          <option value="10000">Kopi Susu - Rp 10.000</option>
+          <option value="12000">Capuccino - Rp 12.000</option>
+        </optgroup>
+      </select>
+
+      <input type="number" id="jumlah" placeholder="Jumlah" min="1">
+      <button onclick="tambahPesanan()">Tambah</button>
+    </div>
+
+    <table id="tabel">
+      <thead>
+        <tr>
+          <th>Menu</th>
+          <th>Harga</th>
+          <th>Jumlah</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="total" id="total">Total: Rp 0</div>
+
+    <button class="pay-btn" onclick="bukaQRIS()">Bayar via QRIS</button>
+    <button class="reset-btn" onclick="resetPesanan()">Reset</button>
+
+    <div class="footer">© 2025 Kasir QRIS | Dibuat dengan ☕ & ❤️</div>
+  </div>
+
+  <!-- Popup QRIS -->
+  <div class="qris-modal" id="qrisModal">
+    <div class="qris-content">
+      <h3>Pembayaran QRIS</h3>
+      <p>Scan kode QR di bawah untuk membayar:</p>
+      <img id="qrisImg" src="qris1.png" alt="QRIS Code">
+      <p><strong>Total:</strong> <span id="qrisTotal">Rp 0</span></p>
+      <button class="download-btn" onclick="downloadQR()">📥 Download QR</button>
+      <button class="close-btn" onclick="tutupQRIS()">Tutup</button>
+    </div>
+  </div>
+
+  <script>
+    let total = 0;
+
+    function tambahPesanan() {
+      const select = document.getElementById('menu');
+      const harga = parseInt(select.value);
+      const menuText = select.options[select.selectedIndex].text;
+      const jumlah = parseInt(document.getElementById('jumlah').value);
+
+      if (!harga || !jumlah) {
+        alert("Silakan pilih menu dan isi jumlah!");
+        return;
+      }
+
+      const subtotal = harga * jumlah;
+      total += subtotal;
+
+      const tbody = document.querySelector('#tabel tbody');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${menuText.split('-')[0]}</td>
+        <td>Rp ${harga.toLocaleString()}</td>
+        <td>${jumlah}</td>
+        <td>Rp ${subtotal.toLocaleString()}</td>
+      `;
+      tbody.appendChild(row);
+
+      document.getElementById('total').textContent = `Total: Rp ${total.toLocaleString()}`;
+      document.getElementById('jumlah').value = '';
+      document.getElementById('menu').selectedIndex = 0;
+    }
+
+    function resetPesanan() {
+      if (confirm("Yakin ingin menghapus semua pesanan?")) {
+        document.querySelector('#tabel tbody').innerHTML = '';
+        total = 0;
+        document.getElementById('total').textContent = 'Total: Rp 0';
+      }
+    }
+
+    function bukaQRIS() {
+      if (total <= 0) {
+        alert("Belum ada pesanan!");
+        return;
+      }
+      document.getElementById('qrisTotal').textContent = `Rp ${total.toLocaleString()}`;
+      document.getElementById('qrisModal').style.display = 'flex';
+    }
+
+    function tutupQRIS() {
+      document.getElementById('qrisModal').style.display = 'none';
+    }
+
+    function downloadQR() {
+      const link = document.createElement('a');
+      link.href = document.getElementById('qrisImg').src;
+      link.download = 'QRIS_Pembayaran.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+
+</body>
+</html>
