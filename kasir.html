@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KASIR SMART PARFUME</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #8EC5FC, #E0C3FC);
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    /* ====== LOGIN PAGE ====== */
+    #loginPage {
+      max-width: 400px;
+      margin: 80px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    #loginPage h2 {
+      margin-bottom: 20px;
+      color: #444;
+    }
+
+    #loginPage input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    #loginPage button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #4A90E2;
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    #loginPage button:hover {
+      background: #357ABD;
+    }
+
+    #errorMsg {
+      display: none;
+      background: #FFCCCC;
+      color: red;
+      padding: 8px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    /* ====== KASIR PAGE ====== */
+    #kasirPage {
+      display: none;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #444;
+    }
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+    button {
+      background: #4A90E2;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #357ABD;
+    }
+    .keranjang {
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+    }
+    .total {
+      font-weight: bold;
+      text-align: right;
+      margin-top: 10px;
+    }
+    .qris {
+      text-align: center;
+      display: none;
+      margin-top: 15px;
+    }
+    .qris img {
+      width: 180px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    #struk {
+      display: none;
+      text-align: center;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .warning {
+      background: #FFCCCC;
+      color: red;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- ====== LOGIN PAGE ====== -->
+  <div id="loginPage">
+    <h2>🔐 Login Admin Kasir</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Masuk</button>
+    <div id="errorMsg">❌ Username atau Password salah!</div>
+  </div>
+
+  <!-- ====== KASIR PAGE ====== -->
+  <div id="kasirPage">
+    <div class="container">
+      <h2>SMART PARFUME</h2>
+
+      <label>Pilih Menu:</label>
+      <select id="menu">
+        <option value="Kopi Hitam|10000">Kopi Hitam - Rp10.000</option>
+        <option value="Cappuccino|15000">Cappuccino - Rp15.000</option>
+        <option value="Teh Tarik|12000">Teh Tarik - Rp12.000</option>
+        <option value="Mie Goreng|20000">Mie Goreng - Rp20.000</option>
+        <option value="Nasi Goreng|22000">Nasi Goreng - Rp22.000</option>
+      </select>
+
+      <label>Jumlah:</label>
+      <input type="number" id="jumlah" min="1" value="1">
+
+      <button onclick="tambahItem()">+ Tambah ke Keranjang</button>
+
+      <div class="keranjang">
+        <table id="tabelKeranjang">
+          <thead>
+            <tr><th>Menu</th><th>Harga</th><th>Qty</th><th>Subtotal</th><th>Aksi</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="total" id="totalHarga">Total: Rp0</div>
+      </div>
+
+      <label>Metode Pembayaran:</label>
+      <select id="metode" onchange="tampilkanMetode()">
+        <option value="cash">Cash</option>
+        <option value="qris">QRIS</option>
+      </select>
+
+      <div id="cashSection" style="display:block;">
+        <label>Uang Dibayar:</label>
+        <input type="number" id="uangDibayar" placeholder="Masukkan jumlah uang" oninput="hitungKembalian()">
+        <div class="warning" id="peringatanUang">⚠️ Uang tidak mencukupi!</div>
+        <div id="kembalian">Kembalian: Rp0</div>
+      </div>
+
+      <div class="qris" id="qrisSection">
+        <p>Silakan scan QRIS berikut untuk pembayaran:</p>
+        <img id="qrisImg" src="qr3.png" alt="QRIS">
+        <button onclick="downloadQRIS()">📲 Download QRIS</button>
+      </div>
+
+      <button onclick="buatStruk()">🧾 Buat Struk & Download</button>
+
+      <div id="struk"></div>
+    </div>
+  </div>
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script>
+    // ===== LOGIN FUNCTION =====
+    function login() {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+      const errorMsg = document.getElementById("errorMsg");
+
+      if (user === "admin321" && pass === "258446kasir") {
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("kasirPage").style.display = "block";
+      } else {
+        errorMsg.style.display = "block";
+      }
+    }
+
+    // ===== KASIR SCRIPT =====
+    let keranjang = [];
+
+    function formatRupiah(angka) {
+      return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function tambahItem() {
+      const menuData = document.getElementById("menu").value.split("|");
+      const nama = menuData[0];
+      const harga = parseInt(menuData[1]);
+      const jumlah = parseInt(document.getElementById("jumlah").value);
+      keranjang.push({ nama, harga, jumlah });
+      renderKeranjang();
+    }
+
+    function hapusItem(i) {
+      keranjang.splice(i, 1);
+      renderKeranjang();
+    }
+
+    function renderKeranjang() {
+      const tbody = document.querySelector("#tabelKeranjang tbody");
+      tbody.innerHTML = "";
+      let total = 0;
+
+      keranjang.forEach((item, i) => {
+        const subtotal = item.harga * item.jumlah;
+        total += subtotal;
+        tbody.innerHTML += `
+          <tr>
+            <td>${item.nama}</td>
+            <td>Rp${formatRupiah(item.harga)}</td>
+            <td>${item.jumlah}</td>
+            <td>Rp${formatRupiah(subtotal)}</td>
+            <td><button onclick="hapusItem(${i})">❌</button></td>
+          </tr>`;
+      });
+      document.getElementById("totalHarga").innerText = `Total: Rp${formatRupiah(total)}`;
+    }
+
+    function tampilkanMetode() {
+      const metode = document.getElementById("metode").value;
+      document.getElementById("cashSection").style.display = metode === "cash" ? "block" : "none";
+      document.getElementById("qrisSection").style.display = metode === "qris" ? "block" : "none";
+    }
+
+    function hitungTotal() {
+      return keranjang.reduce((sum, item) => sum + item.harga * item.jumlah, 0);
+    }
+
+    function hitungKembalian() {
+      const total = hitungTotal();
+      const bayar = parseInt(document.getElementById("uangDibayar").value) || 0;
+      const peringatan = document.getElementById("peringatanUang");
+      const kembalianElem = document.getElementById("kembalian");
+
+      if (bayar < total) {
+        peringatan.style.display = "block";
+        kembalianElem.innerText = "Kembalian: Rp0";
+      } else {
+        peringatan.style.display = "none";
+        kembalianElem.innerText = `Kembalian: Rp${formatRupiah(bayar - total)}`;
+      }
+    }
+
+    function downloadQRIS() {
+      const link = document.createElement("a");
+      link.href = document.getElementById("qrisImg").src;
+      link.download = "QRIS.png";
+      link.click();
+    }
+
+    function buatStruk() {
+      const total = hitungTotal();
+      const metode = document.getElementById("metode").value;
+      const bayar = parseInt(document.getElementById("uangDibayar").value) || 0;
+
+      if (metode === "cash" && bayar < total) {
+        alert("⚠️ Uang tidak mencukupi untuk pembayaran!");
+        return;
+      }
+
+      let strukHTML = `<h3>🧾 Struk Pembelian</h3><p>${new Date().toLocaleString()}</p>
+      <table style='width:100%;border-collapse:collapse;'>
+      <tr><th>Menu</th><th>Qty</th><th>Subtotal</th></tr>`;
+
+      keranjang.forEach(item => {
+        strukHTML += `<tr><td>${item.nama}</td><td>${item.jumlah}</td>
+        <td>Rp${formatRupiah(item.harga * item.jumlah)}</td></tr>`;
+      });
+
+      strukHTML += `</table><p><b>Total: Rp${formatRupiah(total)}</b></p>
+      <p>Metode: ${metode.toUpperCase()}</p>`;
+
+      if (metode === "cash") {
+        strukHTML += `<p>Uang: Rp${formatRupiah(bayar)}</p>
+        <p>Kembalian: Rp${formatRupiah(bayar - total)}</p>`;
+      } else {
+        strukHTML += `<p>Pembayaran via QRIS</p>`;
+      }
+
+      strukHTML += `<br><p style="font-size:14px; font-weight:bold;">✨ Terima kasih telah berbelanja di toko kami ✨</p>`;
+
+      const strukDiv = document.getElementById("struk");
+      strukDiv.innerHTML = strukHTML;
+      strukDiv.style.display = "block";
+
+      html2canvas(strukDiv).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "struk_pembelian.png";
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>
